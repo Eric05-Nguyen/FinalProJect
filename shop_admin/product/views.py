@@ -109,12 +109,12 @@ def add_product(request):
 
     categories= Category.objects.all()
     brands= Brand.objects.all()
-    return render(request,'add_product.html',{'categories':categories,'brands':brands})
+    return render(request,'product/add_product.html',{'categories':categories,'brands':brands})
 
 @login_required(login_url='login')
 def my_products(request):
     products = Product.objects.filter(id_user=request.user).order_by('-id')
-    return render(request, 'my-product.html', {'products': products})
+    return render(request, 'product/my-product.html', {'products': products})
 
 @login_required(login_url='login')
 def edit_product(request, id):
@@ -223,7 +223,7 @@ def edit_product(request, id):
     # nếu method = get
     categories=Category.objects.all()
     brands=Brand.objects.all()
-    return render(request,'edit-product.html',{'product':product,'categories':categories,'brands':brands})
+    return render(request,'product/edit-product.html',{'product':product,'categories':categories,'brands':brands})
 
 def delete_product(request,id):
     product=Product.objects.get(id=id)
@@ -233,7 +233,7 @@ def delete_product(request,id):
 def product_detail(request,id):
     product=Product.objects.get(id=id)
     recommended_products=Product.objects.all()[:6]
-    return render(request,'product-details.html',{'product':product,'recommended_products':recommended_products})
+    return render(request,'product/product-details.html',{'product':product,'recommended_products':recommended_products})
 
 
 def add_to_cart(request,id):
@@ -257,13 +257,15 @@ def add_to_cart(request,id):
     return redirect('product_detail',id=id)
 
 def cart(request):
-    cart=request.session.get('cart',{})
-    total_price_all=0;
-    total_single_price=0;
+    cart = request.session.get('cart', {})
+    total_price_all = 0
     for item in cart.values():
-        item['total_single_price']=item['price']*item['quantity']
-        total_price_all+=item['total_single_price']    
-    return render(request,'cart.html',{'cart':cart,'total_single_price':total_single_price  ,'total_price_all':total_price_all})
+        item['total_single_price'] = item['price'] * item['quantity']
+        total_price_all += item['total_single_price']    
+    return render(request, 'product/cart.html', {
+        'cart': cart,
+        'total_price_all': total_price_all
+    })
 
 @csrf_exempt 
 def update_cart_ajax(request):

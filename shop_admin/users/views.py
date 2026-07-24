@@ -31,7 +31,7 @@ def register_view(request):
         
     else:
         form=UserRegisterForm()
-    return render(request,'register.html',{'form':form})
+    return render(request,'users/register.html',{'form':form})
 
 # Xử lý login
 def login_view(request):
@@ -45,7 +45,7 @@ def login_view(request):
             return redirect('index')
     else:
         form=AuthenticationForm()
-    return render(request,'login.html',{'form':form})
+    return render(request,'users/login.html',{'form':form})
 
 def logout_view(request):
     logout(request)
@@ -109,6 +109,6 @@ def account_update(request):
         return redirect('account_update')
 
 
-    return render(request, 'account.html',{'countries':countries})
+    return render(request, 'users/account.html',{'countries':countries})
 
 

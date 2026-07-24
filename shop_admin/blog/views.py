@@ -12,7 +12,7 @@ def blog_list_view(request):
     paginator=Paginator(blog_list,3)
     page_number=request.GET.get('page')
     blogs=paginator.get_page(page_number)
-    return render(request,'blogList.html',{'blogs':blogs,'paginator':paginator,})
+    return render(request,'blog/blogList.html',{'blogs':blogs,'paginator':paginator,})
 
 def blog_detail_view(request,id):
     blog_item = get_object_or_404(Blog, id=id)
@@ -42,7 +42,7 @@ def blog_detail_view(request,id):
         'stars':range(1,6),
         'comments': comments,
     }    
-    return render(request,'blogDetail.html',context)
+    return render(request,'blog/blogDetail.html',context)
     
    
 @csrf_exempt
