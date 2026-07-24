@@ -9,12 +9,8 @@ urlpatterns = [
     path('shop/', views.shop, name='shop'),
     path('admin/', admin.site.urls),
     path('blog/', include('blog.urls')),
-    
     path('product/', include('product.urls')),
-    
     path('users/', include('users.urls')),
-    path('account/', include('users.account_urls')),
-    
     path('ckeditor5/', include('django_ckeditor_5.urls')),
 ]
 
