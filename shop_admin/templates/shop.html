@@ -1,0 +1,89 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Shop | E-Shopper{% endblock %}
+
+{% block advertisement %}
+<section id="advertisement">
+    <div class="container">
+        <img src="{% static 'images/shop/advertisement.jpg' %}" alt="" />
+    </div>
+</section>
+{% endblock %}
+
+{% block content %}
+<div class="features_items"><!--features_items-->
+    <h2 class="title text-center">Features Items</h2>
+    
+    {% for product in products %}
+    <div class="col-sm-4">
+        <div class="product-image-wrapper">
+            <div class="single-products">
+                <div class="productinfo text-center">
+                    <a href="{% url 'product_detail' product.id %}">
+                        {% if product.get_image_list %}
+                            <img src="/media/product_images/{{ product.get_image_list.0 }}" alt="{{ product.name }}" style="height: 250px; object-fit: cover;" />
+                        {% else %}
+                            <img src="{% static 'images/shop/default.jpg' %}" alt="{{ product.name }}" style="height: 250px; object-fit: cover;" />
+                        {% endif %}
+                    </a>
+                        <h2>${{ product.price }}</h2>
+                    <a href="{% url 'product_detail' product.id %}">    
+                        <p>{{ product.name }}</p>
+                    </a>
+                   
+                    <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                </div>
+                <div class="product-overlay">
+                    <div class="overlay-content">
+                        <a href="{% url 'product_detail' product.id %}" style="color: white;display: block;">    
+                            <h2>${{ product.price }}</h2>
+                            <p>{{product.name}}</p>   
+                        </a>
+                        <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                    </div>
+                </div>
+                {% if product.status == 0 %}
+                    <img src="{% static 'images/home/new.png' %}" class="new" alt="" />
+                {% elif product.status == 1 %}
+                    <img src="{% static 'images/home/sale.png' %}" class="new" alt="" />
+                {% endif %}
+            </div>
+            <div class="choose">
+                <ul class="nav nav-pills nav-justified">
+                    <li><a href=""><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+                    <li><a href=""><i class="fa fa-plus-square"></i>Add to compare</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="col-sm-12">
+        <p class="text-center">Chưa có sản phẩm nào.</p>
+    </div>
+    {% endfor %}
+    
+    <div class="clearfix"></div>
+    <div class="text-center" style="width: 100%;">
+        <ul class="pagination">
+            {% if products.has_previous %}
+                <li><a href="?page=1">&laquo;</a></li>
+                <li><a href="?page={{ products.previous_page_number }}">&lsaquo;</a></li>
+            {% endif %}
+            
+            {% for num in products.paginator.page_range %}
+                {% if products.number == num %}
+                    <li class="active"><a href="?page={{ num }}">{{ num }}</a></li>
+                {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                    <li><a href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+                <li><a href="?page={{ products.next_page_number }}">&rsaquo;</a></li>
+                <li><a href="?page={{ products.paginator.num_pages }}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
+</div><!--features_items-->
+{% endblock %}

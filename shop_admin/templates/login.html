@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đăng nhập | E-Shopper{% endblock title %}
+
+{% block content %}
+<section id="form" style="margin-top: 0;"><!--form-->
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">
+                <div class="login-form"><!--login form-->
+                    <h2>Login to your account</h2>
+                    <form method="post" action="">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-weight: bold; margin-bottom: 5px; display: block; color: #363432;">{{ field.label }}:</label>
+                                {{ field }}
+                                
+                                {% if field.errors %}
+                                    <p style="color: red; font-size: 13px; margin-top: 5px; margin-bottom: 0;">* {{ field.errors.0 }}</p>
+                                {% endif %}
+
+                                {% if field.name == 'password' and form.non_field_errors %}
+                                    <p style="color: red; font-size: 13px; margin-top: 5px; margin-bottom: 0;">* {{ form.non_field_errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <span>
+                            <input type="checkbox" class="checkbox"> 
+                            Keep me signed in
+                        </span>
+                        <button type="submit" class="btn btn-default" style="margin-top: 10px; background: #FE980F; border: none; color: white;">Login</button>
+                    </form>
+                </div><!--/login form-->
+            </div>
+        </div>
+    </div>
+</section><!--/form-->
+{% endblock content %}

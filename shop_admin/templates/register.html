@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Đăng ký | E-Shopper{% endblock title %}
+
+{% block content %}
+<section id="form" style="margin-top: 0;"><!--form-->
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-6 col-sm-offset-1">
+                <div class="signup-form"><!--sign up form-->
+                    <h2>Đăng ký</h2>
+                    <form method="post" action="" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        {% for field in form %}
+                            <div style="margin-bottom: 15px;">
+                                <label style="font-weight: bold; margin-bottom: 5px; display: block; color: #363432;">{{ field.label }}:</label>
+                               {{field}}
+                                
+                                {% if field.errors %}
+                                    <p style="color: red; font-size: 13px; margin-top: 5px; margin-bottom: 0;">* {{ field.errors.0 }}</p>
+                                {% endif %}
+                            </div>
+                        {% endfor %}
+
+                        <button type="submit" class="btn btn-default" style="margin-top: 10px; background: #FE980F; border: none; color: white;">Đăng ký</button>
+                    </form>
+                </div><!--/sign up form-->
+            </div>
+        </div>
+    </div>
+</section><!--/form-->
+{% endblock content %}

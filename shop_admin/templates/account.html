@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+{%load static %}
+{% block title %} Account | E -Shopee {% endblock title %}
+
+{% block content %}
+					<div class="blog-post-area">
+						<h2 class="title text-center" style="font-size: 30px;">Update user</h2>
+						 <div class="signup-form"><!--update form-->
+						<h2>Update User Profile</h2>
+						<form action="" method="post" enctype="multipart/form-data">
+							{% csrf_token %}
+							<input type="text" style="background-color:grey;color:black;" name="username" placeholder="Name" value="{{user.username}}" readonly/>
+							<input type="email" style="background-color:grey;color:black;" name="email" placeholder="Email Address" value="{{user.email}}" readonly/>
+							<input type="password" style="color:black;" name="password" placeholder="Password" value=""/>
+                            <input type="text" style="color:black;" name="address" placeholder="Address" value="{{user.address|default:''}}"/>
+                            <select style="color:black;" name="id_country" id="">
+                                <option value=""> Country</option>
+                                {% for country in countries %}
+                                <option value="{{country.id}}" {% if user.id_country and user.id_country.id == country.id %}selected{% endif %}>{{country.name}}</option>
+                                {% endfor %}
+                            </select>
+                            <input type="text" style="color:black;" name="phone" placeholder="Phone" value="{{ user.phone|default:'' }}"/>
+                            <input type="file" style="color:black;" name="avatar"/>
+                            <button type="submit" class="btn btn-default">Update</button>
+                        </form>
+					</div>
+				
+                    {% if messages %}
+                        {% for message in messages %}
+                            <script>
+                                alert("{{ message }}");
+                            </script>
+                        {% endfor %}
+                    {% endif %}
+
+{% endblock content %}

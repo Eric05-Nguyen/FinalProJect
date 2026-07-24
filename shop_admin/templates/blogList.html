@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %} Blog | E-Shopper{% endblock title %}
+
+{% block content %}
+<div class="blog-post-area">
+    <h2 class="title text-center">Latest From our Blog</h2>
+    
+    {% for item in blogs %}
+    <div class="single-blog-post">
+        <h3>{{item.title}}</h3>
+        <div class="post-meta">
+            <ul>
+                <li><i class="fa fa-user"></i> {{item.author}}</li>
+                <li><i class="fa fa-clock-o"></i> {{item.created_at|time:"H:i"}}</li>
+                <li><i class="fa fa-calendar"></i> {{item.created_at|date:"d/m/Y"}}</li>
+            </ul>
+            <span>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star"></i>
+                <i class="fa fa-star-half-o"></i>
+            </span>
+        </div>
+        <a href="{% url 'blog_detail' item.id %}">
+            {% if item.image %}
+                <img src="{{ item.image.url }}" alt="{{ item.title }}">
+            {% endif %}
+        </a>
+        <p>{{item.description}}</p>
+        <a class="btn btn-primary" href="{% url 'blog_detail' item.id %}">Read More</a>
+    </div>
+    {% endfor %}
+
+    <div class="pagination-area">
+        <ul class="pagination">
+            <!-- {% if blogs.has_previous %}
+            <li>
+            <a href="?page={{blogs.previous_page_number}}"><i class="fa fa-angle-double-left"></i></a>
+            </li>
+            {% endif %}
+            
+            {% for num in blogs.paginator.page_range %}
+            <li>
+                <a href="?page={{ num }}" {% if blogs.number == num %}class="active"{% endif %}>
+                    {{ num }}
+                </a>
+            </li>
+            {% endfor %}
+        
+            {% if blogs.has_next %}
+               <li><a href="?page={{ blogs.next_page_number }}"><i class="fa fa-angle-double-right"></i></a></li>
+             {% endif %} -->
+            
+            {% if blogs.has_previous %}
+            <a href="?page=1">First</a>
+            <a href="?page={{blogs.previous_page_number}}"><</a>
+            {% endif %}
+
+            {% for num in blogs.paginator.page_range %}
+                {% if blogs.number == num %}
+                    <strong>{{num}}</strong>
+                {% elif num > blogs.number|add:'-2' and num < blogs.number|add:'2' %}  
+                    <a href="?page={{num}}">{{num}}</a>
+                {% endif %}
+            {% endfor %}
+
+            {% if blogs.has_next %}
+                <a href="?page={{blogs.next_page_number}}">></a>
+                <a href="?page={{paginator.num_pages}}">Last</a>
+            {% endif %}
+
+         </ul>
+    </div>
+{% endblock content %}

@@ -1,0 +1,162 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Product Details | E-Shopper{% endblock %}
+{% block content %}
+    <div class="col-sm-12 padding-right">
+					<div class="product-details"><!--product-details-->
+						<div class="col-sm-5">
+                            <div class="view-product">
+                                <img id="main-image"  src="/media/product_images/{{ product.get_image_list.0 }}" alt="" style="object-fit: cover;width: 100%;height: 100%;"/>
+                                <a id="main-image-zoom" href="/media/product_images/{{ product.get_image_list.0 }}" rel="prettyPhoto"><h3>ZOOM</h3></a>
+                            </div>
+								
+							<div id="similar-product" class="carousel slide" data-ride="carousel">
+								
+								  <!-- Wrapper for slides -->
+								    <div class="carousel-inner">
+										<div class="item active">
+                                            {% for img in product.get_image_list %}
+                                            <a href="#" class="thumbnail-click" data-img="/media/product_images/{{ img }}">
+												<img src="/media/product_images/{{ img }}" style="width: 50px; height: 50px; object-fit: cover; margin-right: 10px;" alt="">
+											</a>
+											{% endfor %}
+                                        </div>
+										
+									</div>
+
+								  <!-- Controls -->
+								  <a class="left item-control" href="#similar-product" data-slide="prev">
+									<i class="fa fa-angle-left"></i>
+								  </a>
+								  <a class="right item-control" href="#similar-product" data-slide="next">
+									<i class="fa fa-angle-right"></i>
+								  </a>
+							</div>
+
+						</div>
+						<div class="col-sm-7">
+							<div class="product-information"><!--/product-information-->
+								<img src="{% static 'images/product-details/new.jpg' %}" class="newarrival" alt="" />
+								<h2>Name:{{product.name}}</h2>
+								<p>Product ID :{{product.id}}</p>
+								<img src="{% static 'images/product-details/rating.png' %}" alt="" />
+								<form action="{% url 'add_to_cart' product.id %}" method="POST">
+									{% csrf_token %}
+									<span>
+										<span>US ${{product.price}}</span>
+										<label>Quantity:</label>
+										<input type="number" name="quantity" value="1" min="1" />
+										<button type="submit" class="btn btn-fefault cart">
+										<i class="fa fa-shopping-cart"></i>
+										Add to cart
+										</button>
+									</span>
+								</form>	
+								<p><b>Availability:</b> In Stock</p>
+								<p><b>Condition:</b>{% if product.status == 0 %} New{% elif product.status == 1 %}Sale{% endif %}</p>
+								<p><b>Brand:</b>{{product.brand}}</p>
+								<a href=""><img src="{% static 'images/product-details/share.png' %}" class="share img-responsive"  alt="" /></a>
+							</div><!--/product-information-->
+						</div>
+					</div><!--/product-details-->
+					
+   <div class="category-tab shop-details-tab">
+    <div class="col-sm-12">
+        <ul class="nav nav-tabs">
+            <li class="active"><a href="#details" data-toggle="tab">Details</a></li>
+            <li><a href="#companyprofile" data-toggle="tab">Company Profile</a></li>
+            <li><a href="#tag" data-toggle="tab">Tag</a></li>
+            <li><a href="#reviews" data-toggle="tab">Reviews</a></li>
+        </ul>
+    </div>
+    
+    <div class="tab-content">
+        <div class="tab-pane fade active in" id="details" style="padding: 20px;">
+            <p>{{ product.description|default:"Chưa có mô tả cho sản phẩm này." }}</p>
+        </div>
+        
+        <div class="tab-pane fade" id="companyprofile" style="padding: 20px;">
+            <p>{{ product.CompaniProFile|default:"Chưa có thông tin công ty." }}</p>
+        </div>
+        
+        <div class="tab-pane fade" id="tag" style="padding: 20px;">
+            <p>Sản phẩm này chưa có Tag nào.</p>
+        </div>
+        
+        <div class="tab-pane fade" id="reviews" >
+            <div class="col-sm-12">
+                <p><b>Write Your Review</b></p>
+                <form action="#">
+                    <span>
+                        <input type="text" placeholder="Your Name"/>
+                        <input type="email" placeholder="Email Address"/>
+                    </span>
+                    <textarea name="" ></textarea>
+                    <b>Rating: </b> <img src="{% static 'images/product-details/rating.png' %}" alt="" />
+                    <button type="button" class="btn btn-default pull-right">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+					
+					<div class="recommended_items"><!--recommended_items-->
+						<h2 class="title text-center">recommended items</h2>
+						
+						<div id="recommended-item-carousel" class="carousel slide" data-ride="carousel">
+							<div class="carousel-inner">
+								{% for rcm_product in recommended_products %}
+									{% if forloop.counter0|divisibleby:3 %}
+										<div class="item {% if forloop.first %}active{% endif %}">
+									{% endif %}
+									<div class="col-sm-4">
+										<div class="product-image-wrapper">
+											<div class="single-products">
+												<div class="productinfo text-center">
+													{% if rcm_product.get_image_list %}
+
+														<img src=" /media/product_images/{{ rcm_product.get_image_list.0 }}" alt="" />
+													{% else %}
+														<img src="{% static 'images/home/recommend1.jpg' %}" alt="" />
+													{% endif %}
+													<h2>{{rcm_product.price}}</h2>
+													<p>{{rcm_product.name}}</p>
+													<button type="button" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</button>
+												</div>
+											</div>
+										</div>
+									</div>
+									{% if forloop.counter|divisibleby:3 or forloop.last %}
+										</div>
+									{% endif %}
+								{% endfor %}
+							</div>
+							<a class="left recommended-item-control" href="#recommended-item-carousel" data-slide="prev">
+           						<i class="fa fa-angle-left"></i>
+        					</a>
+   						    <a class="right recommended-item-control" href="#recommended-item-carousel" data-slide="next">
+								<i class="fa fa-angle-right"></i>
+							</a>			
+						</div>
+</div>
+
+
+<script>
+	
+	document.addEventListener("DOMContentLoaded", function() {
+		let thumbnails = document.querySelectorAll(".thumbnail-click");
+        
+		thumbnails.forEach(function(thumb) {
+			thumb.addEventListener('click', function(e) {
+				e.preventDefault(); 
+				
+				let newImgSrc = this.getAttribute("data-img");
+				
+				document.getElementById("main-image").setAttribute("src", newImgSrc);
+				document.getElementById("main-image-zoom").setAttribute("href", newImgSrc);
+			});
+		});
+	});
+</script>
+{% endblock %}

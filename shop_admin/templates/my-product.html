@@ -1,0 +1,59 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} My Products | E-Shopper {% endblock title %}
+
+{% block content %}
+<div id="cart_items">
+    
+    <div style="margin-bottom: 20px; text-align: right;">
+        <button style="background-color: #FE980F; color:white; border: none; padding: 10px 20px; border-radius: 4px;" onclick="window.location.href='{% url 'add_product' %}'">
+            <i class="fa fa-plus"></i> Add New
+        </button>
+    </div>
+
+    <div class="table-responsive cart_info">
+        <table class="table table-condensed" style="width: 100%;">
+            <thead>
+                <tr class="cart_menu">
+                    <td class="id" style="padding-left: 20px;">ID</td>
+                    <td class="image">Image</td>
+                    <td class="description">Name</td>
+                    <td class="price">Price</td>
+                    <td class="total">Action</td>
+                </tr>
+            </thead>
+            <tbody>
+                {% for product in products %}	
+                <tr>
+                    <!-- Gộp cột ID vào chung một dòng thay vì tách thành dòng riêng -->
+                    <td class="cart_id" style="padding-left: 20px; vertical-align: middle; font-size: 16px;">
+                        {{ product.id }}	
+                    </td>
+                    <td class="cart_product" style="vertical-align: middle;">
+                        {% if product.get_image_list %}
+                            <a href=""><img src="/media/product_images/{{ product.get_image_list.0 }}" alt="{{ product.name }}" width="100"></a>
+                        {% else %}
+                            <span>No image</span>
+                        {% endif %}
+                    </td>
+                    <td class="cart_description" style="vertical-align: middle;">
+                        <h4><a href="">{{ product.name }}</a></h4>
+                    </td>
+                    <td class="cart_price" style="vertical-align: middle;">
+                        <p>${{ product.price }}</p>
+                    </td>
+                    <td class="cart_total" style="vertical-align: middle; font-size: 20px;">
+                        <a class="cart_quantity_edit" href="{% url 'edit_product' product.id %}" style="color: #696763; margin-right: 10px;" title="Edit"><i class="fa fa-edit"></i></a>
+                        <a class="cart_quantity_delete" href="{% url 'delete_product' product.id %}" style="color: red;" title="Delete" onclick="return confirm('Bạn có chắc chắn muốn xóa sản phẩm này?')"><i class="fa fa-times"></i></a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center" style="padding: 30px;">Hiện tại bạn chưa có sản phẩm nào</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock content %}

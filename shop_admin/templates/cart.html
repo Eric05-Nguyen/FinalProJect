@@ -1,0 +1,195 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Cart | E-Shopper{% endblock %}
+{% block layout %}
+    <section id="cart_items">
+		<div class="container">
+			{% csrf_token %}
+			<div class="breadcrumbs">
+				<ol class="breadcrumb">
+				  <li><a href="#">Home</a></li>
+				  <li class="active">Shopping Cart</li>
+				</ol>
+			</div>
+			<div class="table-responsive cart_info">
+				<table class="table table-condensed">
+					<thead>
+						<tr class="cart_menu">
+							<td class="image">Item</td>
+							<td class="description"></td>
+							<td class="price">Price</td>
+							<td class="quantity">Quantity</td>
+							<td class="total">Total</td>
+							<td></td>
+						</tr>
+					</thead>
+					<tbody>
+						{% for item in cart.values %}
+						<tr id="product-row-{{item.id}}">
+							<td class="cart_product">
+								<a href=""><img src="/media/product_images/{{item.image}}" alt="" style="width: 110px;"></a>
+							</td>
+							<td class="cart_description">
+								<h4><a href="">{{item.name}}</a></h4>
+								<p>Web ID: {{item.id}}</p>
+							</td>
+							<td class="cart_price">
+								<p>{{item.price}}</p>
+							</td>
+							<td class="cart_quantity">
+								<div class="cart_quantity_button">
+									<a class="cart_quantity_up update-cart-btn" href="#" data-id="{{item.id}}" data-action="up"> + </a>
+									<input class="cart_quantity_input" id="qty-{{item.id}}" type="text" name="quantity" value="{{item.quantity}}" autocomplete="off" size="2">
+									<a class="cart_quantity_down update-cart-btn" href="#" data-id="{{item.id}}" data-action="down"> - </a>
+								</div>
+							</td>
+							<td class="cart_total">
+								<p class="cart_total_price" id="item-total-{{item.id}}">{{item.total_single_price}}</p>
+							</td>
+							<td class="cart_delete">
+								<a class="cart_quantity_delete update-cart-btn" href="#" data-id="{{item.id}}" data-action="delete"><i class="fa fa-times"></i></a>
+							</td>
+						</tr>
+						{% empty %}
+						<tr>
+							<td colspan="6" class="text-center" style="padding: 30px;">
+								<h4>Hiện tại không có sản phẩm trong giỏ hàng</h4>
+								<a href="/" class="btn btn-default check_out" style="background: #FE980F; color: #fff; margin-top: 10px;">Tiếp tục mua sắm</a>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		</div>
+	</section> <!--/#cart_items-->
+
+	<section id="do_action">
+		<div class="container">
+			<div class="heading">
+				<h3>What would you like to do next?</h3>
+				<p>Choose if you have a discount code or reward points you want to use or would like to estimate your delivery cost.</p>
+			</div>
+			<div class="row">
+				<div class="col-sm-6">
+					<div class="chose_area">
+						<ul class="user_option">
+							<li>
+								<input type="checkbox">
+								<label>Use Coupon Code</label>
+							</li>
+							<li>
+								<input type="checkbox">
+								<label>Use Gift Voucher</label>
+							</li>
+							<li>
+								<input type="checkbox">
+								<label>Estimate Shipping & Taxes</label>
+							</li>
+						</ul>
+						<ul class="user_info">
+							<li class="single_field">
+								<label>Country:</label>
+								<select>
+									<option>United States</option>
+									<option>Bangladesh</option>
+									<option>UK</option>
+									<option>India</option>
+									<option>Pakistan</option>
+									<option>Ucrane</option>
+									<option>Canada</option>
+									<option>Dubai</option>
+								</select>
+							</li>
+							<li class="single_field">
+								<label>Region / State:</label>
+								<select>
+									<option>Select</option>
+									<option>Dhaka</option>
+									<option>London</option>
+									<option>Dillih</option>
+									<option>Lahore</option>
+									<option>Alaska</option>
+									<option>Canada</option>
+									<option>Dubai</option>
+								</select>
+							</li>
+							<li class="single_field zip-field">
+								<label>Zip Code:</label>
+								<input type="text">
+							</li>
+						</ul>
+						<a class="btn btn-default update" href="">Get Quotes</a>
+						<a class="btn btn-default check_out" href="">Continue</a>
+					</div>
+				</div>
+				<div class="col-sm-6">
+					<div class="total_area">
+						<ul>
+							<li>Cart Sub Total <span id="cart-subtotal">{{total_price_all}}</span></li>
+							<li>Eco Tax <span>$0</span></li>
+							<li>Shipping Cost <span>Free</span></li>
+							<li>Total <span id="cart-total">{{total_price_all}}</span></li>
+						</ul>
+						<a class="btn btn-default update" href="">Update</a>
+						<a class="btn btn-default check_out" href="">Check Out</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</section><!--/#do_action-->
+{% endblock layout %}
+
+{% block scripts %}
+<script>
+    document.addEventListener('click', function(e) {
+        const btn = e.target.closest('.update-cart-btn');
+        if (!btn) return;
+
+        e.preventDefault();
+        
+        const productId = btn.getAttribute('data-id');
+        const action = btn.getAttribute('data-action');
+        const csrfTokenElement = document.querySelector('[name=csrfmiddlewaretoken]');
+        if (!csrfTokenElement) return;
+        const csrfToken = csrfTokenElement.value;
+        
+        fetch("{% url 'update_cart' %}", {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': csrfToken
+            },
+            body: JSON.stringify({
+                'product_id': productId,
+                'action': action
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.status === 'success') {
+                if (action === 'delete' || data.quantity <= 0) {
+                    const row = document.getElementById('product-row-' + productId);
+                    if (row) row.remove();
+                } else {
+                    const qtyInput = document.getElementById('qty-' + productId);
+                    const itemTotal = document.getElementById('item-total-' + productId);
+                    if (qtyInput) qtyInput.value = data.quantity;
+                    if (itemTotal) itemTotal.innerText = data.item_total;
+                }
+                
+                const cartSubtotal = document.getElementById('cart-subtotal');
+                const cartTotal = document.getElementById('cart-total');
+                if (cartSubtotal) cartSubtotal.innerText = data.cart_total;
+                if (cartTotal) cartTotal.innerText = data.cart_total;
+                
+                const badge = document.getElementById('cart-badge');
+                if (badge) badge.innerText = data.cart_count;
+            } else {
+                alert('Lỗi: ' + data.message);
+            }
+        })
+        .catch(error => console.error('Lỗi kết nối:', error));
+    });
+</script>
+{% endblock scripts %}
