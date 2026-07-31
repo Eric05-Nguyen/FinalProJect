@@ -332,12 +332,15 @@ def send_order_email(request,email,name,order,cart,total_price_all):
     subject=f'Xác nhận đơn hàng {order.id} tại E-Shopper'
     from_email=settings.EMAIL_HOST_USER
     to=[email]
-    text_content=f"Chào {name}, cảm ơn bạn đã đặt hàng"
+    text_content=f"Chào {name}, cảm ơn bạn đã đặt hàng"  
+    domain=request.build_absolute_uri('/')[:-1]
+
     html_content=render_to_string('emails/order_email.html',{
         'name':name,
         'order':order,
         'cart':cart,
-        'total_price_all':total_price_all
+        'total_price_all':total_price_all,
+        'domain':domain
     })
     msg=EmailMultiAlternatives(subject,text_content,from_email,to)
     msg.attach_alternative(html_content,'text/html')
