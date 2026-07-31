@@ -9,6 +9,7 @@ urlpatterns = [
     path('product-detail/<int:id>',views.product_detail,name='product_detail'),
     path('add-to-cart/<int:id>',views.add_to_cart,name='add_to_cart'),
     path('update-cart/',views.update_cart_ajax,name='update_cart'),
-    path('cart/',views.cart,name='cart')
+    path('cart/',views.cart,name='cart'),
+    path('checkout/',views.checkout,name='checkout'),
 ]
 

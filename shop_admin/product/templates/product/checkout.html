@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %} Checkout | E-Shopper{% endblock %}
+{% block layout %}
+<section id="cart_items">
+	<div class="container">
+		<form action="{% url 'checkout' %}" method="post">
+			{% csrf_token %}
+			
+			<div class="breadcrumbs">
+				<ol class="breadcrumb">
+				  <li><a href="/">Home</a></li>
+				  <li class="active">Checkout</li>
+				</ol>
+			</div>
+
+			{% if user.is_authenticated %}
+				<div class="user-information" style="margin-bottom: 30px; background: #F0F0E6; padding: 20px; border-radius: 4px;">
+					<h3 style="color: #FE980F; margin-top: 0;">Thông tin người mua</h3>
+					<p style="font-size: 15px;"><strong>Họ tên:</strong> {{user.username}}</p>
+					<p style="font-size: 15px;"><strong>Email:</strong> {{user.email}}</p>
+					<p style="font-size: 15px;"><strong>Số điện thoại:</strong> {{user.phone|default_if_none:"Chưa cập nhật"}}</p>
+					<p style="font-size: 15px;"><strong>Địa chỉ:</strong> {{user.address|default_if_none:"Chưa cập nhật"}}</p>
+				</div>
+			{% else %}
+				<div class="register-form" style="margin-bottom: 30px; background: #F0F0E6; padding: 20px; border-radius: 4px;">
+					<h3 style="color: #FE980F; margin-top: 0;">Đăng ký tài khoản nhanh</h3>
+					{% include 'users/includes/register_fields.html' %}
+				</div>        
+			{% endif %}
+
+			<div class="review-payment">
+				<h2>Review & Payment</h2>
+			</div>
+
+			<div class="table-responsive cart_info">
+				<table class="table table-condensed">
+					<thead>
+						<tr class="cart_menu">
+							<td class="image">Item</td>
+							<td class="description">Description</td>
+							<td class="price">Price</td>
+							<td class="quantity" style="text-align: center;">Quantity</td>
+							<td class="total">Total</td>
+						</tr>
+					</thead>
+					<tbody>
+						{% for item in cart.values %}
+						<tr>
+							<td class="cart_product">
+								<a href=""><img src="/media/product_images/{{item.image}}" alt="" style="width: 110px;"></a>
+							</td>
+							<td class="cart_description">
+								<h4><a href="">{{item.name}}</a></h4>
+								<p>Web ID: {{item.id}}</p>
+							</td>
+							<td class="cart_price">
+								<p>${{item.price}}</p>
+							</td>
+							<td class="cart_quantity" style="text-align: center;">
+								<p style="font-size: 16px; margin: 0;">{{item.quantity}}</p>
+							</td>
+							<td class="cart_total">
+								<p class="cart_total_price">${{item.total_single_price}}</p>
+							</td>
+						</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+
+			<div class="row" style="margin-top: 20px;">
+				<div class="col-sm-6 col-sm-offset-6">
+					<div class="total_area">
+						<ul>
+							<li>Cart Sub Total <span>${{total_price_all}}</span></li>
+							<li>Eco Tax <span>$0</span></li>
+							<li>Shipping Cost <span>Free</span></li>
+							<li>Total <span>${{total_price_all}}</span></li>
+						</ul>
+					</div>
+				</div>
+			</div>
+
+			<div class="payment-options" style="margin-top: 20px;">
+				<span>
+					<label><input type="checkbox"> Direct Bank Transfer</label>
+				</span>
+				<span>
+					<label><input type="checkbox"> Check Payment</label>
+				</span>
+				<span>
+					<label><input type="checkbox"> Paypal</label>
+				</span>
+			</div>
+
+			<div style="margin-top: 20px; margin-bottom: 40px; text-align: right;">
+				<button type="submit" class="btn btn-default check_out" style="background: #FE980F; color: white; padding: 10px 30px; font-size: 16px; border: none; border-radius: 4px;">Đặt hàng</button>
+			</div>
+		</form>
+	</div>
+</section>
+{% endblock layout %}					
+

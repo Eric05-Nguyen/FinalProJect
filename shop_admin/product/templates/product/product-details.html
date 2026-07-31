@@ -54,7 +54,7 @@
 								</form>	
 								<p><b>Availability:</b> In Stock</p>
 								<p><b>Condition:</b>{% if product.status == 0 %} New{% elif product.status == 1 %}Sale{% endif %}</p>
-								<p><b>Brand:</b>{{product.brand}}</p>
+								<p><b>Brand:</b>{{product.id_brand}}</p>
 								<a href=""><img src="{% static 'images/product-details/share.png' %}" class="share img-responsive"  alt="" /></a>
 							</div><!--/product-information-->
 						</div>

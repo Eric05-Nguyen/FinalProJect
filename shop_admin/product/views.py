@@ -1,6 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
-from .models import Category, Brand, Product
+from django.contrib.auth import login
+from .models import Category, Brand, Product, History
 from django.http import JsonResponse
 import os
 from django.conf import settings
@@ -10,6 +11,11 @@ from PIL import Image
 from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt 
+from users.forms import UserRegisterForm
+
+from django.core.mail import EmailMultiAlternatives
+from django.template.loader import render_to_string
+from django.conf import settings
 @login_required(login_url='login')
 def add_product(request):
     if request.method=='POST':
@@ -320,3 +326,78 @@ def update_cart_ajax(request):
             return JsonResponse({'status':'error','message': str(e)})
 
     return JsonResponse({'status':'error','message':'Cập nhật thất bại!'})    
+
+
+def send_order_email(request,email,name,order,cart,total_price_all):
+    subject=f'Xác nhận đơn hàng {order.id} tại E-Shopper'
+    from_email=settings.EMAIL_HOST_USER
+    to=[email]
+    text_content=f"Chào {name}, cảm ơn bạn đã đặt hàng"
+    html_content=render_to_string('emails/order_email.html',{
+        'name':name,
+        'order':order,
+        'cart':cart,
+        'total_price_all':total_price_all
+    })
+    msg=EmailMultiAlternatives(subject,text_content,from_email,to)
+    msg.attach_alternative(html_content,'text/html')
+    msg.send()
+    
+def checkout(request):
+    cart = request.session.get('cart', {})
+
+    if not cart:
+        return redirect('cart')
+
+    total_price_all = 0
+    for item in cart.values():
+        item['total_single_price'] = item['price'] * item['quantity']
+        total_price_all += item['total_single_price']
+    
+    if request.method == 'POST':
+        user = request.user
+        if user.is_authenticated:
+            name = user.username
+            email = user.email
+            phone = user.phone
+            address = user.address
+        else:
+            form=UserRegisterForm(request.POST)
+            if form.is_valid():
+                user=form.save(commit=False)
+                user.set_password(form.cleaned_data['password'])
+                user.save()
+                login(request,user)
+                name=user.username
+                email=user.email
+                phone=user.phone
+            else:
+                return render(request, 'product/checkout.html', {
+                    'cart': cart,
+                    'total_price_all': total_price_all,
+                    'form': form
+                })
+
+        order_History=History.objects.create(
+            email=email,
+            phone=phone,
+            name=name,
+            id_user=user if user.is_authenticated else None,
+            price=total_price_all,
+            address=address
+        )
+    # Xử lý email khi mua hàng
+        send_order_email(request,email,name,order_History,cart,total_price_all)
+
+    # Xóa giỏ hàng sau khi mua hàng
+
+        del request.session['cart']
+        request.session.modified = True
+        return redirect('index')
+
+    form= None if request.user.is_authenticated else UserRegisterForm()
+    return render(request, 'product/checkout.html', {
+        'cart': cart,
+        'total_price_all': total_price_all,
+        'form': form
+    })

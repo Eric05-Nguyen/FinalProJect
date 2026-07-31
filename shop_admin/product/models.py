@@ -52,3 +52,12 @@ class Product(models.Model):
                 return []
         return self.images if self.images else []
 
+class History(models.Model):
+    email=models.EmailField(max_length=100)
+    name=models.CharField(max_length=100)
+    phone=models.CharField(max_length=100,null=True,blank=True)
+    address=models.CharField(max_length=100,null=True,blank=True)
+    id_user=models.ForeignKey('users.CustomUser',on_delete=models.SET_NULL,null=True,blank=True)
+    price=models.DecimalField(max_digits=10,decimal_places=2)
+    class Meta:
+        db_table='histories'

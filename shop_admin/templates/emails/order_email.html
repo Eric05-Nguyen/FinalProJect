@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ORDER_EMAIL</title>
+</head>
+<body>
+    <h2>Cảm ơn {{name}} đã đặt hàng tại E-Shopper</h2>
+    <p>Mã đơn hàng:<strong>{{order.id}}</strong></p>
+    <p>Số điện thoại :{{order.phone}}</p>
+    <h3>Chi tiết đơn hàng</h3>
+    <table border="1" style="border-collapse: collapse; width: 100%;">
+       <thead>
+        <tr>
+            <th>STT</th>
+            <th>Tên sản phẩm</th>
+            <th>Hình ảnh</th>
+            <th>Đơn giá</th>
+            <th>Số lượng</th>
+            <th>Thành tiền</th>
+        </tr>
+       </thead>
+       <tbody>
+            {% for item in cart.values %}
+            <tr>
+                <td>{{forloop.counter}}</td>
+                <td>{{item.name}}</td>
+                <td><img src="{{item.image}}" alt=""></td>
+                <td>{{item.price}}</td>
+                <td>{{item.quantity}}</td>
+                <td>{{item.total_single_price}}</td>
+            </tr>
+            {% endfor %}
+       </tbody>
+    </table>
+    <h3>Tổng tiền thanh toán : ${{total_price_all}}</h3>
+</body>
+</html>

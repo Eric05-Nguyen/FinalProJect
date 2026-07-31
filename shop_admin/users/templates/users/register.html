@@ -12,16 +12,7 @@
                     <h2>Đăng ký</h2>
                     <form method="post" action="" enctype="multipart/form-data">
                         {% csrf_token %}
-                        {% for field in form %}
-                            <div style="margin-bottom: 15px;">
-                                <label style="font-weight: bold; margin-bottom: 5px; display: block; color: #363432;">{{ field.label }}:</label>
-                               {{field}}
-                                
-                                {% if field.errors %}
-                                    <p style="color: red; font-size: 13px; margin-top: 5px; margin-bottom: 0;">* {{ field.errors.0 }}</p>
-                                {% endif %}
-                            </div>
-                        {% endfor %}
+                        {% include 'users/includes/register_fields.html' %}
 
                         <button type="submit" class="btn btn-default" style="margin-top: 10px; background: #FE980F; border: none; color: white;">Đăng ký</button>
                     </form>
