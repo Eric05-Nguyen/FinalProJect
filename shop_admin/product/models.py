@@ -24,6 +24,7 @@ import json
 
 class Product(models.Model):
     name=models.CharField(max_length=200)
+    name_slug=models.CharField(max_length=200,blank=True,null=True)
     price=models.DecimalField(max_digits=10,decimal_places=2)
     description=models.TextField(null=True,blank=True)
     id_category=models.ForeignKey(Category,on_delete=models.SET_NULL,null=True,blank=True)

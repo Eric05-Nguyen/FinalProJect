@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Search Product | E-Shopper{% endblock %}
+{% block content %}
+    <style>
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        .filter-col {
+            flex: 1;
+        }
+        .filter-row .form-control {
+            background-color: #F0F0E9;
+            border: 0;
+            box-shadow: none;
+        }
+    </style>
+
+    <form action="" method="get" name="search-product">
+        <div class="filter-row">
+            <div class="filter-col">
+                <input type="text" name="name" class="form-control" placeholder="Name" value="{{ user_input }}">
+            </div>
+            <div class="filter-col">
+                <select name="price" class="form-control">
+                    <option value="">Choose price</option>
+                    <option value="0-200">$0-$200</option>
+                    <option value="200-400">$200-$400</option>
+                    <option value="400-600">$400-$600</option>
+                    <option value="600-800">$600-$800</option>
+                    <option value="800-plus">$800-plus</option>
+                </select>
+            </div>
+            <div class="filter-col">
+                <select name="category" class="form-control">
+                    <option value="">Choose category</option>
+                    {% for category in categories %}
+                    <option value="{{category.id}}">{{category.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-col">
+                <select name="brand" class="form-control">
+                    <option value="">Choose brand</option>
+                    {% for brand in brands %}
+                    <option value="{{brand.id}}">{{brand.name}}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="filter-col">
+                <select name="status" class="form-control">
+                    <option value="">Status</option>
+                    <option value="0">New</option>
+                    <option value="1">Sale</option>
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-sm-12">
+                <button type="submit" class="btn btn-warning">Search</button>
+            </div>
+        </div>
+    </form>
+
+    <div class="features_items"><!--features_items-->
+        <h2 class="title text-center">Search Results</h2>
+        
+        {% if products %}
+            {% for product in products %}
+            <div class="col-sm-4">
+                <div class="product-image-wrapper">
+                    <div class="single-products">
+                        <div class="productinfo text-center">
+                            <a href="{% url 'product_detail' product.id %}">
+                                {% if product.get_image_list %}
+                                    <img src="/media/product_images/{{ product.get_image_list.0 }}" alt="{{ product.name }}" style="height: 250px; object-fit: cover;" />
+                                {% else %}
+                                    <img src="{% static 'images/shop/default.jpg' %}" alt="{{ product.name }}" style="height: 250px; object-fit: cover;" />
+                                {% endif %}
+                            </a>
+                            <h2>${{ product.price }}</h2>
+                            <a href="{% url 'product_detail' product.id %}">    
+                                <p>{{ product.name }}</p>
+                            </a>
+                            <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                        </div>
+                        <div class="product-overlay">
+                            <div class="overlay-content">
+                                <a href="{% url 'product_detail' product.id %}" style="color: white;display: block;">    
+                                    <h2>${{ product.price }}</h2>
+                                    <p>{{product.name}}</p>   
+                                </a>
+                                <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                            </div>
+                        </div>
+                        {% if product.status == 0 %}
+                            <img src="{% static 'images/home/new.png' %}" class="new" alt="" />
+                        {% elif product.status == 1 %}
+                            <img src="{% static 'images/home/sale.png' %}" class="new" alt="" />
+                        {% endif %}
+                    </div>
+                    <div class="choose">
+                        <ul class="nav nav-pills nav-justified">
+                            <li><a href="#"><i class="fa fa-plus-square"></i>Add to wishlist</a></li>
+                            <li><a href="#"><i class="fa fa-plus-square"></i>Add to compare</a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center" style="font-size: 18px; margin-top: 30px;">Không tìm thấy sản phẩm nào phù hợp.</p>
+        {% endif %}
+    </div>
+{% endblock %}

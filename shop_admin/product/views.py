@@ -4,6 +4,7 @@ from django.contrib.auth import login
 from .models import Category, Brand, Product, History
 from django.http import JsonResponse
 import os
+from django.db import connection
 from django.conf import settings
 import time
 from django.shortcuts import redirect
@@ -12,7 +13,8 @@ from django.shortcuts import get_object_or_404
 import json
 from django.views.decorators.csrf import csrf_exempt 
 from users.forms import UserRegisterForm
-
+from django.db.models import Q, Case, When, IntegerField, Value
+from .models import Product 
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.conf import settings
@@ -403,4 +405,38 @@ def checkout(request):
         'cart': cart,
         'total_price_all': total_price_all,
         'form': form
+    })
+
+def search_product(request):
+    user_input = request.GET.get('name', '').strip()
+    
+    if not user_input:
+        query = "SELECT * FROM products ORDER BY id DESC"
+        products = Product.objects.raw(query)
+    else:
+        raw_words = user_input.split()
+        conditions = []
+        params = []
+        for w in raw_words:
+            conditions.append("name LIKE %s")
+            params.append(f"%{w}%")
+        
+        sql_where = " AND ".join(conditions)
+        query = f"""
+                SELECT * 
+                FROM products 
+                WHERE {sql_where} 
+                ORDER BY CASE WHEN name LIKE %s THEN 0 ELSE 1 END, id DESC
+        """
+        params.append(f"%{user_input}%")
+        products = list(Product.objects.raw(query, params))
+            
+    categories = Category.objects.all()
+    brands = Brand.objects.all()
+    
+    return render(request, 'product/search_product.html', {
+        'products': products, 
+        'user_input': user_input,
+        'categories': categories,
+        'brands': brands
     })
