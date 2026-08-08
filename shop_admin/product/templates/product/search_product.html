@@ -26,18 +26,18 @@
             <div class="filter-col">
                 <select name="price" class="form-control">
                     <option value="">Choose price</option>
-                    <option value="0-200">$0-$200</option>
-                    <option value="200-400">$200-$400</option>
-                    <option value="400-600">$400-$600</option>
-                    <option value="600-800">$600-$800</option>
-                    <option value="800-plus">$800-plus</option>
+                    <option value="0-200" {% if price_filter == '0-200' %}selected{% endif %}>$0-$200</option>
+                    <option value="200-400" {% if price_filter == '200-400' %}selected{% endif %}>$200-$400</option>
+                    <option value="400-600" {% if price_filter == '400-600' %}selected{% endif %}>$400-$600</option>
+                    <option value="600-800" {% if price_filter == '600-800' %}selected{% endif %}>$600-$800</option>
+                    <option value="800-plus" {% if price_filter == '800-plus' %}selected{% endif %}>$800-plus</option>
                 </select>
             </div>
             <div class="filter-col">
                 <select name="category" class="form-control">
                     <option value="">Choose category</option>
                     {% for category in categories %}
-                    <option value="{{category.id}}">{{category.name}}</option>
+                    <option value="{{category.id}}" {% if category_filter == category.id|stringformat:"s" %}selected{% endif %}>{{category.name}}</option>
                     {% endfor %}
                 </select>
             </div>
@@ -45,15 +45,16 @@
                 <select name="brand" class="form-control">
                     <option value="">Choose brand</option>
                     {% for brand in brands %}
-                    <option value="{{brand.id}}">{{brand.name}}</option>
+                    <option value="{{brand.id}}" {% if brand_filter == brand.id|stringformat:"s" %}selected{% endif %}>{{brand.name}}</option>
                     {% endfor %}
                 </select>
             </div>
             <div class="filter-col">
                 <select name="status" class="form-control">
                     <option value="">Status</option>
-                    <option value="0">New</option>
-                    <option value="1">Sale</option>
+                    {% for value, name in statuses %}
+                        <option value="{{ value }}" {% if status_filter == value|stringformat:"s" %}selected{% endif %}>{{ name }}</option>
+                    {% endfor %}
                 </select>
             </div>
         </div>
@@ -114,4 +115,57 @@
             <p class="text-center" style="font-size: 18px; margin-top: 30px;">Không tìm thấy sản phẩm nào phù hợp.</p>
         {% endif %}
     </div>
-{% endblock %}
+    {% endblock %}
+    {% block scripts %}
+    <script>
+        function renderProducts(products){
+            var container= $('.features_items')
+            container.empty()
+            container.append('<h2 class="title text-center">Search Results</h2>')
+            if (products.length===0){
+                container.append('<p class="text-center" style="font-size: 18px; margin-top: 30px;">Không tìm thấy sản phẩm nào phù hợp.</p>')
+            }else {
+                for (var i=0;i<products.length;i++){
+                    var p =products[i]
+                    var statusImg=p.status===0?'<img src="/static/images/home/new.png" class="new" alt="" />':(p.status ===1 ?'<img src="/static/images/home/sale.png" class="new" alt="" />':'')
+                    
+                    var html = `
+                        <div class="col-sm-4">
+                            <div class="product-image-wrapper">
+                                <div class="single-products">
+                                    <div class="productinfo text-center">
+                                        <a href="/product/product-detail/${p.id}">
+                                            <img src="${p.image}" style="height: 250px; object-fit: cover;" />
+                                        </a>
+                                        <h2>$${p.price}</h2>
+                                        <p>${p.name}</p>
+                                        <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                                    </div>
+                                    ${statusImg}
+                                </div>
+                            </div>
+                        </div>`;
+                        container.append(html); 
+                }
+            }
+        }
+        $(document).ready(function(){
+            $('form[name="search-product"]').on('input change',function(e){
+                var formData=$(this).serialize();
+                $.ajax({
+                    url:"/product/search-2/",
+                    type:"GET",
+                    data:formData,
+                    success:function(response){
+                        if (response.status==='success'){
+                            renderProducts(response.products);
+                        }
+                    }
+                })
+            });
+            $('form[name="search-product"]').on('submit',function(e){
+                e.preventDefault()
+            })
+        });
+    </script>
+    {% endblock scripts %}

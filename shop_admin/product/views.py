@@ -407,36 +407,87 @@ def checkout(request):
         'form': form
     })
 
-def search_product(request):
-    user_input = request.GET.get('name', '').strip()
+def get_filtered_products(params):
+    user_input = params.get('name', '').strip()
+    price_filter = params.get('price', '').strip() or params.get('price_range', '').strip()
+    category_filter=params.get('category', '').strip()
+    brand_filter=params.get('brand', '').strip()
+    status_filter=params.get('status', '').strip()
+    where_clauses = []
+    sql_params = []
+    order_by_clause = "ORDER BY id DESC"
+    order_by_params = None
     
-    if not user_input:
-        query = "SELECT * FROM products ORDER BY id DESC"
-        products = Product.objects.raw(query)
-    else:
-        raw_words = user_input.split()
-        conditions = []
-        params = []
-        for w in raw_words:
-            conditions.append("name LIKE %s")
-            params.append(f"%{w}%")
+    if user_input:
+        words = user_input.split()
+        for w in words:
+            where_clauses.append("name LIKE %s")
+            sql_params.append(f"%{w}%")
+        order_by_clause = "ORDER BY CASE WHEN name LIKE %s THEN 0 ELSE 1 END, id DESC"
+        order_by_params = f"%{user_input}%"
         
-        sql_where = " AND ".join(conditions)
-        query = f"""
-                SELECT * 
-                FROM products 
-                WHERE {sql_where} 
-                ORDER BY CASE WHEN name LIKE %s THEN 0 ELSE 1 END, id DESC
-        """
-        params.append(f"%{user_input}%")
-        products = list(Product.objects.raw(query, params))
+    if price_filter:
+        try:
+            seporator = ',' if ',' in price_filter else '-'
+            min_price, max_price = price_filter.split(seporator)
             
-    categories = Category.objects.all()
-    brands = Brand.objects.all()
+            if max_price == 'plus':
+                where_clauses.append("price >= %s")
+                sql_params.append(float(min_price))
+            else:
+                where_clauses.append("price BETWEEN %s AND %s")
+                sql_params.append(float(min_price))
+                sql_params.append(float(max_price))
+        except ValueError:
+            pass
+
+    if category_filter:
+        where_clauses.append("id_category_id=%s")
+        sql_params.append(int(category_filter))
     
+    if brand_filter:
+        where_clauses.append("id_brand_id=%s")
+        sql_params.append(int(brand_filter))
+    
+    if status_filter:
+        where_clauses.append("status=%s")
+        sql_params.append(int(status_filter))
+    
+    if order_by_params:
+        sql_params.append(order_by_params)
+    
+    sql_where=f"WHERE { ' AND '.join(where_clauses)}" if where_clauses else ""
+    sql_query=f"SELECT * FROM products {sql_where} {order_by_clause}"
+    return list(Product.objects.raw(sql_query, sql_params))
+    
+def search_product(request):
+    products = get_filtered_products(request.GET)
     return render(request, 'product/search_product.html', {
         'products': products, 
-        'user_input': user_input,
-        'categories': categories,
-        'brands': brands
+        'user_input': request.GET.get('name', '').strip(),
+        'price_filter': request.GET.get('price', '').strip(),
+        'category_filter':request.GET.get('category', '').strip(),
+        'brand_filter':request.GET.get('brand', '').strip(),
+        'status_filter':request.GET.get('status', '').strip(),
+        'categories': Category.objects.all(),
+        'brands': Brand.objects.all(),
+        'statuses': Product.status_choices,
     })
+
+# cách 2 để tra cứu sản phẩm
+def search_product_2(request):
+    products = get_filtered_products(request.GET)
+    
+    product_list = []
+    for p in products:
+        image_url = f"/media/product_images/{p.get_image_list[0]}"
+        product_list.append({
+            'id': p.id,
+            'name': p.name,
+            'price': float(p.price),
+            'image': image_url,
+            'status': p.status
+        })
+        
+    return JsonResponse({'status': 'success', 'products': product_list})
+        
