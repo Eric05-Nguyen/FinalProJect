@@ -60,8 +60,124 @@
     <script src="{% static 'js/bootstrap.min.js' %}"></script>
     <script src="{% static 'js/jquery.prettyPhoto.js' %}"></script>
     <script src="{% static 'js/main.js' %}"></script>
+   
+     <script>
+        $(document).ready(function(){
+            var currentUrl = new URL(window.location.href);
+            var existingPriceRange = currentUrl.searchParams.get('price_range');
+            if (existingPriceRange) {
+                var parts = existingPriceRange.split(',');
+                var min = parseInt(parts[0]) || 0;
+                var max = parts[1] === 'plus' ? 800 : (parseInt(parts[1]) || 800);
+                $('#sl2').slider('setValue', [min, max]);
+            }
+
+            $('#sl2').slider().on('slideStop', function(e){
+                var min_price = e.value[0];
+                var max_price = e.value[1]>=800 ? 'plus' : e.value[1];
+                var price_range = min_price + ',' + max_price;
+                var currentUrl = new URL(window.location.href);
+                currentUrl.searchParams.set('price_range', price_range);
+                currentUrl.searchParams.delete('page');
+                if($('.features_items').length>0){
+                    window.history.pushState({},'',currentUrl.toString());
+                    var ajaxData=currentUrl.searchParams.toString();
+                    $.ajax({
+                        url:'/product/search-2/',
+                        type:'GET',
+                        data:ajaxData,
+                        success:function(response){
+                            if(response.status==='success'){
+                                  renderProducts(response.products);
+                                renderPagination(response.pagination); // Vẽ luôn phân trang
+                            }
+                        }
+                    });
+                } else {
+                    currentUrl.pathname='/product/search/'
+                    window.location.href=currentUrl.toString()
+                }
+            });
+            $(document).on('click','.pagination a',function(e){
+                e.preventDefault()
+                var pageUrl=$(this).attr('href')
+                if (pageUrl ==='#') return
+                var pageNum=new URL(pageUrl,window.location.origin).searchParams.get('page');
+                var currentUrl=new URL(window.location.href);
+                currentUrl.searchParams.set('page',pageNum);
+                window.history.pushState({},'',currentUrl.toString());
+                dataAjax=currentUrl.searchParams.toString();
+                $.ajax({
+                    url:'/product/search-2/',
+                    type:'GET',
+                    data:dataAjax,
+                    success:function(response){
+                        renderProducts(response.products);
+                        renderPagination(response.pagination);
+                        $('html,body').animate({scrollTop:0},800);
+                    }
+                })
+            });
+        });
+    </script>
+    <script>
+        function renderProducts(products){
+            var container = $('.features_items')
+            container.empty()
+            container.append('<h2 class="title text-center">Search Results</h2>')
+            if (products.length === 0) {
+                container.append('<p class="text-center">No products found</p>')
+            } else {
+                for (var i = 0; i < products.length; i++) {
+                    var p=products[i]
+                    var statusImg=p.status==='0'?"<img src='/static/images/home/new.png' class='new' alt='' />":p.status==='1'?"<img src='/static/images/home/sale.png' class='new' alt='' />":''
+                    var html=`
+                         <div class="col-sm-4">
+                            <div class="product-image-wrapper">
+                                <div class="single-products">
+                                    <div class="productinfo text-center">
+                                        <a href="/product/product-detail/${p.id}">
+                                            <img src="${p.image}" style="height: 250px; object-fit: cover;" />
+                                        </a>
+                                        <h2>$${p.price}</h2>
+                                        <p>${p.name}</p>
+                                        <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
+                                    </div>
+                                    ${statusImg}
+                                </div>
+                            </div>
+                        </div>`;
+                    container.append(html)
+                }
+            }
+        }
+        function renderPagination(pagination) {
+            $('.pagination-container').remove()
+            if(pagination.num_pages<=1) return  
+            var container = $('<div class="text-center pagination-container" style="width: 100%;"><ul class="pagination"></ul></div>');
+            var ul = container.find('.pagination')
+            if(pagination.has_previous){
+                ul.append('<li><a href="?page=1">&laquo;</a></li>')
+                ul.append('<li><a href="?page=' + pagination.previous_page_number + '">&lsaquo;</a></li>');
+            }
+            for (var i = 0; i < pagination.page_range.length; i++) {
+                var num = pagination.page_range[i];
+                if(num===pagination.current_page){
+                    ul.append('<li class="active"><a href="?page=' + num + '">' + num + '</a></li>');
+                }else{
+                    ul.append('<li><a href="?page=' + num + '">' + num + '</a></li>');
+                }
+            }
+            if(pagination.has_next){
+                ul.append('<li><a href="?page=' + pagination.next_page_number + '">&rsaquo;</a></li>');
+                ul.append('<li><a href="?page=' + pagination.num_pages + '">&raquo;</a></li>');
+            }
+            $('.features_items').after(container)
+        }
+           
+                
+    </script>
     {% block scripts %}
     {% endblock scripts %}
-
 </body>
 </html>

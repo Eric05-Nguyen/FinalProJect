@@ -115,50 +115,51 @@
             <p class="text-center" style="font-size: 18px; margin-top: 30px;">Không tìm thấy sản phẩm nào phù hợp.</p>
         {% endif %}
     </div>
+    <div class="text-center" style="width: 100%;">
+        <ul class="pagination">
+            {% if products.has_previous %}
+                <li><a href="?page=1">&laquo;</a></li>
+                <li><a href="?page={{ products.previous_page_number }}">&lsaquo;</a></li>
+            {% endif %}
+            
+            {% for num in products.paginator.page_range %}
+                {% if products.number == num %}
+                    <li class="active"><a href="?page={{ num }}">{{ num }}</a></li>
+                {% elif num > products.number|add:'-3' and num < products.number|add:'3' %}
+                    <li><a href="?page={{ num }}">{{ num }}</a></li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if products.has_next %}
+                <li><a href="?page={{ products.next_page_number }}">&rsaquo;</a></li>
+                <li><a href="?page={{ products.paginator.num_pages }}">&raquo;</a></li>
+            {% endif %}
+        </ul>
+    </div>
     {% endblock %}
     {% block scripts %}
     <script>
-        function renderProducts(products){
-            var container= $('.features_items')
-            container.empty()
-            container.append('<h2 class="title text-center">Search Results</h2>')
-            if (products.length===0){
-                container.append('<p class="text-center" style="font-size: 18px; margin-top: 30px;">Không tìm thấy sản phẩm nào phù hợp.</p>')
-            }else {
-                for (var i=0;i<products.length;i++){
-                    var p =products[i]
-                    var statusImg=p.status===0?'<img src="/static/images/home/new.png" class="new" alt="" />':(p.status ===1 ?'<img src="/static/images/home/sale.png" class="new" alt="" />':'')
-                    
-                    var html = `
-                        <div class="col-sm-4">
-                            <div class="product-image-wrapper">
-                                <div class="single-products">
-                                    <div class="productinfo text-center">
-                                        <a href="/product/product-detail/${p.id}">
-                                            <img src="${p.image}" style="height: 250px; object-fit: cover;" />
-                                        </a>
-                                        <h2>$${p.price}</h2>
-                                        <p>${p.name}</p>
-                                        <a href="#" class="btn btn-default add-to-cart"><i class="fa fa-shopping-cart"></i>Add to cart</a>
-                                    </div>
-                                    ${statusImg}
-                                </div>
-                            </div>
-                        </div>`;
-                        container.append(html); 
-                }
-            }
-        }
         $(document).ready(function(){
             $('form[name="search-product"]').on('input change',function(e){
-                var formData=$(this).serialize();
+                var currentUrl=new URL(window.location.href);
+                currentUrl.searchParams.delete('page');
+                var formArray=$(this).serializeArray();
+                formArray.forEach(function(item){
+                    if (item.value){
+                        currentUrl.searchParams.set(item.name,item.value);
+                    } else {
+                        currentUrl.searchParams.delete(item.name);
+                    }
+                });
+                window.history.replaceState({},'',currentUrl.toString());
                 $.ajax({
                     url:"/product/search-2/",
                     type:"GET",
-                    data:formData,
+                    data:currentUrl.searchParams.toString(),
                     success:function(response){
                         if (response.status==='success'){
                             renderProducts(response.products);
+                            renderPagination(response.pagination);
                         }
                     }
                 })

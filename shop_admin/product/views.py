@@ -4,6 +4,7 @@ from django.contrib.auth import login
 from .models import Category, Brand, Product, History
 from django.http import JsonResponse
 import os
+from django.core.paginator import Paginator
 from django.db import connection
 from django.conf import settings
 import time
@@ -462,6 +463,9 @@ def get_filtered_products(params):
     
 def search_product(request):
     products = get_filtered_products(request.GET)
+    paginator=Paginator(products,6)
+    page_number=request.GET.get('page')
+    products=paginator.get_page(page_number)
     return render(request, 'product/search_product.html', {
         'products': products, 
         'user_input': request.GET.get('name', '').strip(),
@@ -477,10 +481,13 @@ def search_product(request):
 # cách 2 để tra cứu sản phẩm
 def search_product_2(request):
     products = get_filtered_products(request.GET)
+    paginator=Paginator(products,6)
+    page_number=request.GET.get('page')
+    products=paginator.get_page(page_number)
     
     product_list = []
     for p in products:
-        image_url = f"/media/product_images/{p.get_image_list[0]}"
+        image_url = f"/media/product_images/{p.get_image_list[0]}" if p.get_image_list else "/static/images/shop/default.jpg"
         product_list.append({
             'id': p.id,
             'name': p.name,
@@ -488,6 +495,17 @@ def search_product_2(request):
             'image': image_url,
             'status': p.status
         })
+    pagination_data={
+        'has_previous':products.has_previous(),
+        'previous_page_number':products.previous_page_number() if products.has_previous() else "",
+        'has_next':products.has_next(),
+        'next_page_number':products.next_page_number() if products.has_next() else "",
+        'num_pages':paginator.num_pages,
+        'current_page':products.number,
+        'page_range':list(paginator.page_range)
+    }
         
-    return JsonResponse({'status': 'success', 'products': product_list})
+    return JsonResponse({'status': 'success', 'products': product_list,'pagination':pagination_data})
+
+# filter thanh price ở menuleft
         
