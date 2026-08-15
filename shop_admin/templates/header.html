@@ -61,7 +61,7 @@
                     <div class="shop-menu clearfix pull-right">
                         <ul class="nav navbar-nav">
                             {% if user.is_authenticated %}
-                            <li><a href="/account/update"><i class="fa fa-user"></i> Account</a></li>
+                            <li><a href="{% url 'account_update' %}"><i class="fa fa-user"></i> Account</a></li>
                             {% endif %}
                             <li><a href=""><i class="fa fa-star"></i> Wishlist</a></li>
                             <li><a href="checkout.html"><i class="fa fa-crosshairs"></i> Checkout</a></li>
@@ -70,6 +70,7 @@
                             <li><a href="{% url 'custom_logout' %}"><i class="fa fa-unlock"></i> Chào, {{user.username}} (Logout)</a></li>
                             {% else %}
                             <li><a href="{% url 'login' %}"><i class="fa fa-lock"></i> Login</a></li>
+                            <li><a href="{% url 'register' %}"><i class="fa fa-user-plus"></i> Register</a></li>
                             {% endif %}
                         
                         </ul>
@@ -104,6 +105,7 @@
                                     <li><a href="{% url 'custom_logout' %}">Logout</a></li>
                                     {% else %}
                                     <li><a href="{% url 'login' %}">Login</a></li>
+                                    <li><a href="{% url 'register' %}">Register</a></li>
                                     {% endif %}
                                 </ul>
                             </li> 

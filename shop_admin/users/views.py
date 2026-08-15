@@ -1,8 +1,14 @@
+from django.utils.http import urlsafe_base64_encode
 from django.shortcuts import render ,redirect
 from django.contrib.auth import authenticate,login,logout
 from django.contrib.auth.forms import AuthenticationForm
 from django.http import HttpResponse
-from django.contrib.auth.models import User
+from django.shortcuts import render ,redirect
+from django.contrib.auth import authenticate,login,logout
+from django.contrib.auth.forms import AuthenticationForm
+from django.http import HttpResponse
+from django.contrib.auth import get_user_model
+User = get_user_model()
 from .models import Country
 from .forms import UserRegisterForm
 from django.contrib.auth.decorators import login_required
@@ -12,7 +18,11 @@ from django.contrib import messages
 from django.conf import settings
 from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
-
+from django.contrib.auth.tokens import default_token_generator
+from django.utils.encoding import force_bytes
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.encoding import force_str
+from django.utils.http import urlsafe_base64_decode
 
 def register_view(request):
     if request.method=="POST":
@@ -111,4 +121,43 @@ def account_update(request):
 
     return render(request, 'users/account.html',{'countries':countries})
 
+# xử lý quên mật khẩu
+def forgot_password(request):
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        user_email=User.objects.filter(email=email).first()
+        if user_email:
+            # mã hóa id người dùng
+            user_id= urlsafe_base64_encode(force_bytes(user_email.pk))
+            # tạo token để bảo mật
+            token=default_token_generator.make_token(user_email)
+            domain=get_current_site(request).domain
+            reset_link=f"http://{domain}/users/reset-password/{user_id}/{token}/"
 
+            subject="Khôi phục mật khẩu"
+            text_content = f"Chào bạn, click vào link sau để đổi mật khẩu: {reset_link}."
+            msg=EmailMultiAlternatives(subject,text_content,settings.DEFAULT_FROM_EMAIL,[user_email.email])
+            msg.send()
+        messages.success(request, 'Đã gửi liên kết khôi phục mật khẩu')
+    return render(request, 'users/forgot_password.html')       
+
+
+# Xác thực token và lưu mk mới
+def reset_password_confirm(request,user_id,token):
+    try:
+        uid=force_str(urlsafe_base64_decode(user_id))
+        user=User.objects.get(pk=uid)
+    except (User.DoesNotExist,ValueError,TypeError):
+        user=None
+    
+    if user is not None and default_token_generator.check_token(user,token):
+        if request.method=='POST':
+            new_password=request.POST.get('new_password')
+            if new_password:
+                user.set_password(new_password)
+                user.save()
+                messages.success(request,"Đã cập nhật mật khẩu thành công")
+                return redirect('login')        
+        return render(request, 'users/password_reset_confirm.html', {'validlink': True})
+    else:
+        return render(request, 'users/password_reset_confirm.html', {'validlink': False})
